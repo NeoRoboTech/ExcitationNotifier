@@ -2,7 +2,6 @@
 function Run() {
   SetProperties();
 
-  const DOMAIN = "https://hogefugapiyo.slack.com"
   const API_USER_TOKEN = PropertiesService.getScriptProperties().getProperty('slack_api_user_token');
   const API_BOT_TOKEN = PropertiesService.getScriptProperties().getProperty('slack_api_bot_token');
   if (!API_USER_TOKEN || !API_BOT_TOKEN) {
@@ -59,7 +58,8 @@ function Run() {
         let th_value = calcEvaluatin(th_messages, m);
         if (th_value >= th_threshold) {
           let th_ts = parseInt(elem.thread_ts * 1000000); 
-          slack_bot.postMessage("<#" + ch.id + "|" + ch.name + ">のスレッドが盛り上がってるよ！\n" + DOMAIN + "/archives/" + ch.id + "/p" + th_ts);
+          const DOMAIN = PropertiesService.getScriptProperties().getProperty('domain');
+          slack_bot.postMessage("<#" + ch.id + "|" + ch.name + ">のスレッドが盛り上がってるよ！\nhttps://" + DOMAIN + "/archives/" + ch.id + "/p" + th_ts);
           writeSpreadSheet(now, ch.name);
           break; // threadの通知は1つまで
         }
@@ -94,11 +94,6 @@ function calcEvaluatin(message_arr, m){
   } else {
     return 0;
   }
-}
-
-function SetProperties() {
-    PropertiesService.getScriptProperties().setProperty('slack_api_user_token', 'xoxp-XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX');
-    PropertiesService.getScriptProperties().setProperty('slack_api_bot_token', 'xoxb-XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX');
 }
 
 // Slack へのアクセサ
@@ -240,7 +235,7 @@ var SlackAccessor = (function () {
 
         // 特定のchannelにメッセージを送信
         p.postMessage = function (msg) {
-            const CHANNEL = 'CXXXXXXXXXXXX';;Fdev
+            const CHANNEL = PropertiesService.getScriptProperties().getProperty('send_channel_id');
             var options = {};
             options['channel'] = CHANNEL;
             options['icon_emoji'] = ":atsumori:"
@@ -256,7 +251,7 @@ var SlackAccessor = (function () {
 })();
 
 function isExcludeChannel(name){
-  const SHEET_ID = 'ZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZz'
+  const SHEET_ID = PropertiesService.getScriptProperties().getProperty('exclude_sheet_id');
   const ss = SpreadsheetApp.openById(SHEET_ID)
   const sheet = ss.getSheets()[0];
   
@@ -264,6 +259,7 @@ function isExcludeChannel(name){
   let last = vals.filter(String).length;
   const exclude_list = vals.slice(0, last).flat();
   if (exclude_list.includes(name)) {
+    // console.log("EXCLUUUUUUUUUDE");
     return true;
   }
   return false;
@@ -272,7 +268,7 @@ function isExcludeChannel(name){
 function isNotifiedChannel(name){
     let now = new Date();
     let six_hours_ago = new Date(now.getTime() - 6 * 60 * 60 * 1000); // 6時間前
-    const SHEET_ID = 'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX'
+    const SHEET_ID = PropertiesService.getScriptProperties().getProperty('history_sheet_id');
     let sheet = SpreadsheetApp.openById(SHEET_ID).getSheets()[0];
     let dates = sheet.getRange("A1:A").getValues();
     let last = dates.filter(String).length;
@@ -290,14 +286,14 @@ function isNotifiedChannel(name){
 }
 
 function writeSpreadSheet(date, name){
-  const SHEET_ID = 'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX'
+  const SHEET_ID = PropertiesService.getScriptProperties().getProperty('history_sheet_id');
   let sheet = SpreadsheetApp.openById(SHEET_ID).getSheets()[0];
   sheet.appendRow([date, name]);
   console.log(date, name);
 }
 
 function sortSpreadSheet(){
-  const SHEET_ID = 'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX'
+  const SHEET_ID = PropertiesService.getScriptProperties().getProperty('history_sheet_id');
   let sheet = SpreadsheetApp.openById(SHEET_ID).getSheets()[0];
   sheet.sort(1, false); // A列 (タイムスタンプ) を降順でsort
 }
@@ -305,7 +301,7 @@ function sortSpreadSheet(){
 function deleteOldData(){
     let now = new Date();
     let six_hours_ago = new Date(now.getTime() - 6 * 60 * 60 * 1000); // 6時間前
-    const SHEET_ID = 'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX'
+    const SHEET_ID = PropertiesService.getScriptProperties().getProperty('history_sheet_id');
     let sheet = SpreadsheetApp.openById(SHEET_ID).getSheets()[0];
     let dates = sheet.getRange("A1:A").getValues();
     let last = dates.filter(String).length;
