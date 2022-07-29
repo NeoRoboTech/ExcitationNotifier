@@ -28,7 +28,7 @@ function Run() {
     let timestamp = now.getTime() - n * 60 * 1000;
     // let six_hours_ago = new Date(now.getTime() - 6 * 60 * 60 * 1000); // 6時間前
 
-    if ((/.*(zz).*/.test(ch.name)) || isExcludeChannel(ch.name) || isNotifiedChannel(ch.name)) {
+    if ((/.*(zz).*/.test(ch.name)) || isExcludeChannel(ch.name) || isNotifiedChannel(ch.id)) {
       console.log("EXCLUDE: " + ch.name);
       continue;
     } else if (/.*(99).*/.test(ch.name)) {
@@ -46,7 +46,7 @@ function Run() {
     let value = calcEvaluatin(messages, m);
     if (value >= threshold) {
       slack_bot.postMessage("<#" + ch.id + "|" + ch.name + ">が盛り上がってるよ！")
-      writeSpreadSheet(now, ch.name);
+      writeSpreadSheet(now, ch.id);
       continue;
     }
 
@@ -60,7 +60,7 @@ function Run() {
           let th_ts = parseInt(elem.thread_ts * 1000000); 
           const DOMAIN = PropertiesService.getScriptProperties().getProperty('domain');
           slack_bot.postMessage("<#" + ch.id + "|" + ch.name + ">のスレッドが盛り上がってるよ！\nhttps://" + DOMAIN + "/archives/" + ch.id + "/p" + th_ts);
-          writeSpreadSheet(now, ch.name);
+          writeSpreadSheet(now, ch.id);
           break; // threadの通知は1つまで
         }
       }
@@ -265,17 +265,17 @@ function isExcludeChannel(name){
   return false;
 }
 
-function isNotifiedChannel(name){
+function isNotifiedChannel(id){
     let now = new Date();
     let six_hours_ago = new Date(now.getTime() - 6 * 60 * 60 * 1000); // 6時間前
     const SHEET_ID = PropertiesService.getScriptProperties().getProperty('history_sheet_id');
     let sheet = SpreadsheetApp.openById(SHEET_ID).getSheets()[0];
     let dates = sheet.getRange("A1:A").getValues();
     let last = dates.filter(String).length;
-    let names = sheet.getRange("B1:B").getValues();
+    let ids = sheet.getRange("B1:B").getValues();
     const date_list = dates.slice(0, last).flat();
-    const name_list = names.slice(0, last).flat();
-    let index = name_list.indexOf(name);
+    const id_list = ids.slice(0, last).flat();
+    let index = id_list.indexOf(id);
     if(index > -1){
       let last_notified = new Date(date_list[index]);
       if (last_notified.getTime() > six_hours_ago.getTime()) {
