@@ -54,7 +54,7 @@ function Run() {
     for (let elem of messages){
       if (elem.thread_ts !== undefined) {
         // if thread root
-        let th_messages = slack.requestThreadMessages(ch, elem.thread_ts, elem.thread_ts);
+        let th_messages = slack.requestThreadMessages(ch, elem.thread_ts, timestamp / 1000.0);
         let th_value = calcEvaluatin(th_messages, m);
         if (th_value >= th_threshold) {
           let th_ts = parseInt(elem.thread_ts * 1000000); 
