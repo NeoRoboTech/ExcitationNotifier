@@ -71,11 +71,16 @@ function Run() {
   deleteOldData();
 }
 
-function calcEvaluatin(message_arr, m){
+function calcEvaluation(message_arr, m){
   // m: threshold number of people joined to conversation
   let user_arr = {};
   for (let elem of message_arr){
-    user_arr[elem.user] = ((elem.user in user_arr) ? user_arr[elem.user] + 1 : 1);
+    // slackbotとappによる投稿を評価値計算から除外
+    if (elem.subtype == "slackbot_response" || (elem.app_id != undefined && elem.app_id.length > 0) || (elem.bot_id != undefined && elem.bot_id.length > 0)) {
+      continue;
+    } else {
+      user_arr[elem.user] = ((elem.user in user_arr) ? user_arr[elem.user] + 1 : 1);
+    }
   }
   
   if (Object.keys(user_arr).length >= m) {
